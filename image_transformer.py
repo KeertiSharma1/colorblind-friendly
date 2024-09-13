@@ -21,10 +21,10 @@ def detect_pattern(image):
     )
     
     # Apply GaussianBlur to reduce noise
-    blurred_image = cv2.GaussianBlur(adaptive_thresh, (3, 3), 0)  # Smaller kernel size
+    blurred_image = cv2.GaussianBlur(adaptive_thresh, (3, 3), 0)
     
     # Find contours from the edges
-    contours, _ = cv2.findContours(blurred_image, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)  # Use RETR_LIST
+    contours, _ = cv2.findContours(blurred_image, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     
     # Create a blank mask and draw contours on it
     pattern_mask = np.zeros_like(gray_image, dtype=np.uint8)
@@ -33,6 +33,7 @@ def detect_pattern(image):
     return pattern_mask
 
 def transform_color(hsv_image, blindness_type):
+    # Apply the color transformation to the HSV image
     if blindness_type == 'protanopia':
         hsv_image[..., 0] = np.where((hsv_image[..., 0] < 10) | (hsv_image[..., 0] > 160), 30, hsv_image[..., 0])
     elif blindness_type == 'deuteranopia':
@@ -42,12 +43,19 @@ def transform_color(hsv_image, blindness_type):
     return hsv_image
 
 def detect_and_transform_color(image, pattern_mask, blindness_type):
+    # Resize pattern_mask to match image size
+    pattern_mask = resize_image(pattern_mask, scale_percent=50)
+    
     # Check if the pattern mask is empty
     if np.count_nonzero(pattern_mask) == 0:
         raise ValueError("Pattern mask is empty. No pattern detected.")
     
     # Convert the pattern mask to a 3-channel mask
     pattern_mask_3ch = cv2.merge([pattern_mask] * 3)
+    
+    # Ensure the pattern_mask_3ch and image have the same size
+    if pattern_mask_3ch.shape != image.shape:
+        pattern_mask_3ch = cv2.resize(pattern_mask_3ch, (image.shape[1], image.shape[0]), interpolation=cv2.INTER_AREA)
     
     # Apply the pattern mask to the original image to extract the pattern area
     pattern_area = cv2.bitwise_and(image, pattern_mask_3ch)
