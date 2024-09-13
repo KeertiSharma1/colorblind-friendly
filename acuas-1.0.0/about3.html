@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>Spectrum Check</title>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <meta content="" name="keywords">
+    <meta content="" name="description">
+
+    <!-- Google Web Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wdth,wght@0,75..100,300..800;1,75..100,300..800&family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap" rel="stylesheet"> 
+
+    <!-- Icon Font Stylesheet -->
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.4/css/all.css"/>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.1/font/bootstrap-icons.css" rel="stylesheet">
+
+    <!-- Libraries Stylesheet -->
+    <link href="lib/animate/animate.min.css" rel="stylesheet">
+    <link href="lib/owlcarousel/assets/owl.carousel.min.css" rel="stylesheet">
+
+    <!-- Customized Bootstrap Stylesheet -->
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Template Stylesheet -->
+    <link href="css/style.css" rel="stylesheet">
+    
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+
+    <style>
+        /* Custom CSS for Result Container */
+        #result-container {
+            display: none;
+            padding: 20px;
+            border-radius: 10px;
+            background-color: #f8f9fa;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            margin-top: 20px;
+        }
+
+        #result-container h4 {
+            font-size: 24px;
+            font-weight: bold;
+            color: #007bff;
+            margin-bottom: 10px;
+        }
+
+        #result-container p {
+            font-size: 18px;
+            color: #333;
+        }
+    </style>
+
+    <script>
+        // Array of image URLs
+        const images = [
+            'img/plate1.jpg',
+            'img/plate2.jpg',
+            'img/plate3.jpg',
+            'img/plate4.jpg',
+            'img/plate5.png',
+            'img/plate6.jpg',
+            'img/plate7.jpg',
+            'img/plate8.jpg',
+            'img/plate9.jpg',
+            'img/plate10.jpg',
+            'img/plate12.jpg',
+            'img/plate13.jpg',
+        ];
+
+        let currentIndex = -1;
+        const userResponses = {};
+
+        // Function to change the image
+        function showNextImage() {
+            // Store user response for the current image
+            if (currentIndex >= 0) {
+                const response = document.getElementById('responseInput').value;
+                userResponses[currentIndex] = response;
+            }
+
+            currentIndex++;
+
+            if (currentIndex < images.length) {
+                // Display the next image
+                document.getElementById('testImage').src = images[currentIndex];
+                document.getElementById('responseInput').value = userResponses[currentIndex] || '';
+
+                // Update button visibility
+                document.getElementById('startTestButton').style.display = 'none';
+                document.getElementById('nextButton').style.display = 'inline-block';
+                document.getElementById('getResultButton').style.display = 'none';
+            } else {
+                // Show the "Get Results" button after the last image
+                document.getElementById('nextButton').style.display = 'none';
+                document.getElementById('getResultButton').style.display = 'inline-block';
+            }
+        }
+
+        // Function to start the test
+        function startTest() {
+            currentIndex = 0;
+            document.getElementById('testImage').src = images[currentIndex];
+            document.getElementById('responseInput').value = '';
+            document.getElementById('startTestButton').style.display = 'none';
+            document.getElementById('nextButton').style.display = 'inline-block';
+            document.getElementById('getResultButton').style.display = 'none';
+        }
+
+        // Function to calculate results
+        function calculateResults() {
+            const plateValues = {
+                1: { normal: '12', redGreen: '12', total: '12' },
+                2: { normal: '8', redGreen: '3', total: 'X' },
+                3: { normal: '5', redGreen: '2', total: 'X' },
+                4: { normal: '29', redGreen: '70', total: 'X' },
+                5: { normal: '74', redGreen: '21', total: 'X' },
+                6: { normal: '7', redGreen: 'X', total: 'X' },
+                7: { normal: '45', redGreen: 'X', total: 'X' },
+                8: { normal: '2', redGreen: 'X', total: 'X' },
+                9: { normal: 'X', redGreen: '2', total: 'X' },
+                10: { normal: '16', redGreen: 'X', total: 'X' },
+                11: { normal: '35', redGreen: { strongProtan: '5', strongDeutan: '3' }, total: 'X' },
+                12: { normal: '96', redGreen: { strongProtan: '6', strongDeutan: '9' }, total: 'X' }
+            };
+
+            let normalCount = 0;
+            let totalBlindCount = 0;
+            let redGreenCount = 0;
+
+            // Check plates 1 to 10
+            for (let plate = 1; plate <= 10; plate++) {
+                const userResponse = userResponses[plate - 1]?.toString() || ''; // Convert to string
+
+                if (plateValues[plate]) {
+                    if (plateValues[plate].normal === userResponse) {
+                        normalCount++;
+                    } else if (plateValues[plate].total === userResponse) {
+                        totalBlindCount++;
+                    } else if (plateValues[plate].redGreen === userResponse) {
+                        redGreenCount++;
+                    }
+                }
+            }
+
+            // Check plates 12 and 13 for specific red-green color blindness
+            const plate11Response = userResponses[10]?.toString() || '';
+            const plate12Response = userResponses[11]?.toString() || '';
+
+            // Determine if responses from plate 12 and 13 match specific red-green blindness
+            if (plateValues[11].normal === plate11Response) {
+                normalCount++;
+            } else if (plateValues[11].total === plate11Response) {
+                totalBlindCount++;
+            } else if (plateValues[11].redGreen === plate11Response) {
+                redGreenCount++;
+            }
+
+            if (plateValues[12].normal === plate12Response) {
+                normalCount++;
+            } else if (plateValues[12].total === plate12Response) {
+                totalBlindCount++;
+            } else if (plateValues[12].redGreen === plate12Response) {
+                redGreenCount++;
+            }
+
+            // Determine result based on counts
+            let result;
+            if (normalCount >= 10) {
+                result = 'Normal Vision';
+            } else if (totalBlindCount >= 3) {
+                result = 'Total Color Blindness';
+            } else {
+                if (redGreenCount > 0) {
+                    if (plate12Response === plateValues[12].redGreen.strongProtan) {
+                        result = 'Strong Protanopia';
+                    } else if (plate12Response === plateValues[12].redGreen.strongDeutan) {
+                        result = 'Strong Deutanopia';
+                    } else {
+                        result = 'Mild Red-Green Color Blindness';
+                    }
+                } else {
+                    result = 'Red-Green Color Blindness';
+                }
+            }
+
+            // Show the result container
+            const resultContainer = document.getElementById('result-container');
+            resultContainer.style.display = 'block';
+
+            // Update the result text
+            const resultText = document.getElementById('result');
+            resultText.innerHTML = `Your score is ${normalCount} out of 12. You have ${result}.`;
+        }
+    </script>
+</head>
+<body>
+    <!-- Spinner Start -->
+    <div id="spinner" class="show bg-white position-fixed translate-middle w-100 vh-100 top-50 start-50 d-flex align-items-center justify-content-center">
+        <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
+            <span class="sr-only">Loading...</span>
+        </div>
+    </div>
+    <!-- Spinner End -->
+
+    <!-- Navbar & Hero Start -->
+    <!-- Add your navbar and hero section here -->
+
+    <!-- Test Page Content Start -->
+    <div class="container py-5">
+        <div class="text-center mb-4">
+            <h1>Spectrum Check</h1>
+            <p>Identify the patterns in these images to determine your color vision type.</p>
+        </div>
+
+        <!-- Test Image -->
+        <div class="text-center mb-4">
+            <img id="testImage" src="img/plate1.jpg" alt="Test Image" class="img-fluid">
+        </div>
+
+        <!-- Response Input -->
+        <div class="text-center mb-4">
+            <input id="responseInput" type="text" placeholder="Enter your response" class="form-control">
+        </div>
+
+        <!-- Buttons -->
+        <div class="text-center mb-4">
+            <button id="startTestButton" class="btn btn-primary" onclick="startTest()">Start Test</button>
+            <button id="nextButton" class="btn btn-secondary" style="display: none;" onclick="showNextImage()">Next Image</button>
+            <button id="getResultButton" class="btn btn-success" style="display: none;" onclick="calculateResults()">Get Results</button>
+        </div>
+
+        <!-- Result Container -->
+        <div id="result-container">
+            <h4>Test Results</h4>
+            <p id="result"></p>
+        </div>
+    </div>
+    <!-- Test Page Content End -->
+
+    <!-- Footer -->
+    <!-- Add your footer content here -->
+
+    <!-- Back to Top -->
+    <a href="#" class="btn btn-primary btn-lg btn-lg-square rounded-circle back-to-top"><i class="bi bi-arrow-up"></i></a>
+
+    <!-- JavaScript Libraries -->
+    <script src="lib/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="lib/animate/animate.min.js"></script>
+    <script src="lib/owlcarousel/owl.carousel.min.js"></script>
+
+    <!-- Template JavaScript -->
+    <script src="js/main.js"></script>
+</body>
+</html>
