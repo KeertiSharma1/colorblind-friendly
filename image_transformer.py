@@ -1,7 +1,16 @@
 import cv2
 import numpy as np
 
+def resize_image(image, scale_percent=50):
+    width = int(image.shape[1] * scale_percent / 100)
+    height = int(image.shape[0] * scale_percent / 100)
+    dimensions = (width, height)
+    return cv2.resize(image, dimensions, interpolation=cv2.INTER_AREA)
+
 def detect_pattern(image):
+    # Resize image to speed up processing
+    image = resize_image(image, scale_percent=50)
+    
     # Convert the image to grayscale
     gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     
@@ -11,18 +20,26 @@ def detect_pattern(image):
         cv2.THRESH_BINARY_INV, 11, 2
     )
     
-    
     # Apply GaussianBlur to reduce noise
-    blurred_image = cv2.GaussianBlur(adaptive_thresh, (5, 5), 0)
+    blurred_image = cv2.GaussianBlur(adaptive_thresh, (3, 3), 0)  # Smaller kernel size
     
     # Find contours from the edges
-    contours, _ = cv2.findContours(blurred_image, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    contours, _ = cv2.findContours(blurred_image, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)  # Use RETR_LIST
     
     # Create a blank mask and draw contours on it
     pattern_mask = np.zeros_like(gray_image, dtype=np.uint8)
     cv2.drawContours(pattern_mask, contours, -1, (255), thickness=cv2.FILLED)
     
     return pattern_mask
+
+def transform_color(hsv_image, blindness_type):
+    if blindness_type == 'protanopia':
+        hsv_image[..., 0] = np.where((hsv_image[..., 0] < 10) | (hsv_image[..., 0] > 160), 30, hsv_image[..., 0])
+    elif blindness_type == 'deuteranopia':
+        hsv_image[..., 0] = np.where((35 < hsv_image[..., 0]) & (hsv_image[..., 0] < 85), 160, hsv_image[..., 0])
+    elif blindness_type == 'tritanopia':
+        hsv_image[..., 0] = np.where((100 < hsv_image[..., 0]) & (hsv_image[..., 0] < 140), 60, hsv_image[..., 0])
+    return hsv_image
 
 def detect_and_transform_color(image, pattern_mask, blindness_type):
     # Check if the pattern mask is empty
@@ -38,26 +55,9 @@ def detect_and_transform_color(image, pattern_mask, blindness_type):
     # Convert the pattern area to HSV color space for easier color manipulation
     hsv_image = cv2.cvtColor(pattern_area, cv2.COLOR_BGR2HSV)
     
-    # Define color transformation mappings based on the type of color blindness
-    def transform_color(hsv_pixel):
-        h, s, v = hsv_pixel
-        if blindness_type == 'protanopia':
-            # Shift red hues to yellow
-            if h < 10 or h > 160:
-                h = 30  # Yellow hue
-        elif blindness_type == 'deuteranopia':
-            # Shift green hues to pink
-            if 35 < h < 85:
-                h = 160  # Pink hue
-        elif blindness_type == 'tritanopia':
-            # Shift blue hues to green
-            if 100 < h < 140:
-                h = 60  # Green hue
-        return (h, s, v)
-    
     # Apply the color transformation to the HSV image
     hsv_image = hsv_image.astype(np.float32)
-    transformed_hsv = np.apply_along_axis(transform_color, 2, hsv_image)
+    transformed_hsv = transform_color(hsv_image, blindness_type)
     
     # Ensure the values are within the valid range
     transformed_hsv = np.clip(transformed_hsv, 0, 255).astype(np.uint8)
