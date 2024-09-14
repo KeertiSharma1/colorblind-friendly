@@ -7,6 +7,8 @@ def resize_image(image, scale_percent=50):
     dimensions = (width, height)
     return cv2.resize(image, dimensions, interpolation=cv2.INTER_AREA)
 
+
+
 def detect_pattern(image):
     # Resize image to speed up processing
     image = resize_image(image, scale_percent=50)

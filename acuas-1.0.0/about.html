@@ -65,13 +65,15 @@
     if (currentIndex < images.length) {
         // Display the next image
         document.getElementById('testImage').src = images[currentIndex];
+        
         document.getElementById('responseInput').value = userResponses[currentIndex] || '';
 
         // Update button visibility
         document.getElementById('startTestButton').style.display = 'none';
         document.getElementById('nextButton').style.display = 'inline-block';
         document.getElementById('getResultButton').style.display = 'none';
-    } else {
+    }
+    else {
         // Show the "Get Results" button after the last image
         document.getElementById('nextButton').style.display = 'none';
         document.getElementById('getResultButton').style.display = 'inline-block';
@@ -91,8 +93,9 @@
         }
 
         // Function to calculate results
-        function calculateResults() {
-            // You can add logic here to process userResponses and calculate the result
+        function calculateResults()
+        {
+            
             
             const plateValues = {
         1: { normal: '12', redGreen: '12', total: '12' },
@@ -174,31 +177,18 @@
         }
     }
 
+    // Update the UI to display the result
+    document.getElementById('resultContainer').style.display = 'block';
+    document.getElementById('overallResult').textContent = `Overall Result: ${result}`;
 
-    
-    // Print debug information
-    console.log("Normal Count:", normalCount);
-    console.log("Total Blind Count:", totalBlindCount);
-    console.log("Red-Green Count:", redGreenCount);
-   
-    // Determine result based on counts
-    
-    // Print final result
-    console.log("Color Vision Result:", result);
-    console.log("user responses", userResponses);
-    console.log("CVD type",cvdType)
-    $('.alert').show()
-    // alert("Your vision is " + result  )
-    return result;
+    if (result === 'Color Vision Deficiency') {
+        document.getElementById('cvdTypeResult').style.display = 'block';
+        document.getElementById('cvdTypeResult').textContent = `Specific Type: ${cvdType}`;
+    } else {
+        document.getElementById('cvdTypeResult').style.display = 'none';
+    }
 
-    // Show the result container
-    const resultContainer = document.getElementById('result-container');
-    resultContainer.style.display = 'block';
-
-    // Update the result text
-    const resultText = document.getElementById('result');
-    // resultText.innerHTML = Your score is ${normalCount} out of 12. You have ${result};
-        }
+    }
     </script>
 </head>
 <body>
@@ -250,7 +240,7 @@
 
     <!-- About Start -->
     <div class="container-fluid about py-5">
-        <div class="container py-5">
+        <div class="container py-5" >
             <div class="row g-5">
                 <div class="col-xl-6 wow fadeInLeft" data-wow-delay="0.2s">
                     <div class="about-img rounded h-100">
@@ -302,7 +292,19 @@
                             <h4 class="text-primary text-uppercase">Your Result</h4>
                             <p id="result" class="lead"></p>
                         </div> -->
+
+                        <!-- <div id="resultContainer" class="alert alert-success" role="alert" style="display: none;">
+                            <h4 class="alert-heading text-center">🎉Your Test Result🎉</h4>
+                            <p id="overallResult" style="font-size: 1.1rem;"></p>
+                            <p id="cvdTypeResult" style="font-size: 1.1rem; display: none;"></p>
+                        </div> -->
                     </div>
+                    
+                </div>
+                <div id="resultContainer" class="alert alert-success" role="alert" style="display: none;max-width: 60%; margin: 40px auto;">
+                    <h4 class="alert-heading text-center">🎉Your Test Result🎉</h4>
+                    <p id="overallResult" style="font-size: 1.1rem;"></p>
+                    <p id="cvdTypeResult" style="font-size: 1.1rem; display: none;"></p>
                 </div>
             </div>
         </div>
