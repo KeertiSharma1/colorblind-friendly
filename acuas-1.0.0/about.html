@@ -121,75 +121,72 @@
             if (plateValues[plate].normal === userResponse) {
                 normalCount++;
             }
-            else if (plateValues[plate].total === userResponse) {
-                totalBlindCount++;
-            }
+            
             else if (plateValues[plate].redGreen === userResponse) {
                 redGreenCount++;
+            }
+            else if (plateValues[plate].total === userResponse) {
+                totalBlindCount++;
             }
         }
     }
 
-    // Check plates 12 and 13 for specific red-green color blindness
-    const plate11Response = userResponses[10].toString();
-    const plate12Response = userResponses[11].toString();
+    // Step 2: Check plate 11 for normal vision
+    const plate11Response = userResponses[10].toString(); // Plate 11 (index 10 in array)
+    if (plateValues[11].normal === plate11Response) {
+        normalCount++;
+    }
 
-    // Print user responses to debug
-    console.log("User Responses:", userResponses);
+    // Step 3: Check plate 12 for normal vision
+    const plate12Response = userResponses[11].toString(); // Plate 12 (index 11 in array)
+    if (plateValues[12].normal === plate12Response) {
+        normalCount++;
+    }
 
-    // Determine if responses from plate 12 and 13 match specific red-green blindness
+    let result;
+    if (normalCount >= 10) {
+        result = 'Normal Vision';
+    } else if (normalCount === 8 || normalCount === 9) {
+        result = 'Borderline Vision';
+    } else {
+        result = 'Color Vision Deficiency'; // CVD identified, further classification required
+    }
+
+    let cvdType = '';
+
+    // Step 5: If CVD, determine type of deficiency
+    if (result === 'Color Vision Deficiency')
+    {   if(totalBlindCount>=3)
+            {
+                cvdType = 'Total Color BLindness'
+            }
+        else
+        {
+        if (plateValues[11].redGreen.strongProtan === plate11Response || 
+            plateValues[12].redGreen.strongProtan === plate12Response) {
+            cvdType = 'Strong Protanopia';
+        } else if (plateValues[11].redGreen.strongDeutan === plate11Response || 
+                   plateValues[12].redGreen.strongDeutan === plate12Response) {
+            cvdType = 'Strong Deutanopia';
+        } else {
+            cvdType = 'Mild Red-Green Color Blindness';
+        }
+        }
+    }
+
+
     
-
-   if (plateValues[11].normal==plate11Response){
-        normalCount++;}
-    else if(plateValues[11].total==plate11Response){
-    totalBlindCount++;}
-
-    else if (plateValues[11].redGreen==plate11Response){
-        redGreenCount++;
-    }
-
-    if (plateValues[12].normal==plate12Response){
-        normalCount++;}
-    else if(plateValues[12].total==plate12Response){
-    totalBlindCount++;}
-
-    else if (plateValues[12].redGreen==plate12Response){
-        redGreenCount++;
-    }
-        
-
     // Print debug information
     console.log("Normal Count:", normalCount);
     console.log("Total Blind Count:", totalBlindCount);
     console.log("Red-Green Count:", redGreenCount);
-    console.log("Plate 12 Response:", plate12Response);
-
+   
     // Determine result based on counts
-    let result;
-    if (normalCount >= 10) {
-        result = 'Normal Vision';
-    } else if (totalBlindCount >= 3) {
-        result = 'Total Color Blindness';
-    } else {
-        if (redGreenCount > 0) {
-            if (plate12Response === plateValues[12].redGreen.strongProtan ||
-                plate13Response === plateValues[13].redGreen.strongProtan) {
-                result = 'Strong Protanopia';
-            } else if (plate12Response === plateValues[12].redGreen.strongDeutan ||
-                       plate13Response === plateValues[13].redGreen.strongDeutan) {
-                result = 'Strong Deutanopia';
-            } else {
-                result = 'Mild Red-Green Color Blindness';
-            }
-        } else {
-            result = 'Red-Green Color Blindness';
-        }
-    }
-
+    
     // Print final result
     console.log("Color Vision Result:", result);
-    console.log("user responses", userResponses)
+    console.log("user responses", userResponses);
+    console.log("CVD type",cvdType)
     $('.alert').show()
     // alert("Your vision is " + result  )
     return result;
@@ -296,15 +293,15 @@
                             <button id="getResultButton" class="btn btn-success btn-lg me-2" onclick="calculateResults()" style="display: none;">Get Results</button>
                         </div>
 
-                        <div class="alert alert-success" role="alert">
+                        <!-- <div class="alert alert-success" role="alert">
                             <h4 class="alert-heading">Your Result</h4>
                             <p id="result">Your score is 5 out of 12. You have STRONG PROTANOPIA</p>
-                          </div>
+                        </div> -->
 
-                        <div id="result-container" class="bg-light rounded p-4 mb-4" style="display: none;">
+                        <!-- <div id="result-container" class="bg-light rounded p-4 mb-4" style="display: none;">
                             <h4 class="text-primary text-uppercase">Your Result</h4>
                             <p id="result" class="lead"></p>
-                        </div>
+                        </div> -->
                     </div>
                 </div>
             </div>
